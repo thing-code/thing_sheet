@@ -1,3 +1,6 @@
+## 0.1.1
+* Adjust ThingExpressiveSheet padding
+
 ## 0.1.0
 BREAKING CHANGES
 * Update Dart SDK version to `3.13.4` with Flutter `3.47`

@@ -34,9 +34,10 @@ class ThingExpressiveSheet extends StatelessWidget {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final Size screen = MediaQuery.of(context).size;
     final double top = MediaQuery.paddingOf(context).top;
+    final double bottom = MediaQuery.paddingOf(context).bottom;
 
     return Padding(
-      padding: .all(16),
+      padding: .fromLTRB(16, 16, 16, bottom),
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: 640,

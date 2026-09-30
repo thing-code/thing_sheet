@@ -1,6 +1,6 @@
 name: thing_sheet
 description: "A Flutter modal bottom sheet driven by spring physics (not a static curve/tween), with a ready-made Material Expressive visual style included."
-version: 0.1.0
+version: 0.1.1
 repository: "https://github.com/thing-code/thing_sheet"
 
 environment:
