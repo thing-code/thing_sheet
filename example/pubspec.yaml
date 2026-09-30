@@ -4,15 +4,14 @@ publish_to: "none"
 version: 0.1.0+1
 
 environment:
-  sdk: ^3.12.2
+  sdk: ^3.13.4
 
 resolution: workspace
 
 dependencies:
   flutter:
     sdk: flutter
-  thing_sheet:
-    path: ../../thing_sheet
+  thing_sheet: any
 
 dev_dependencies:
   flutter_test:

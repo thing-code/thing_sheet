@@ -1,3 +1,7 @@
+## 0.1.0
+BREAKING CHANGES
+* Update Dart SDK version to `3.13.4` with Flutter `3.47`
+
 ## 0.0.1
 
 Initial release.
