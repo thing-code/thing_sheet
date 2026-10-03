@@ -1,3 +1,6 @@
+## 0.1.2
+* Add `useRootNavigator` parameter to `.show` method
+
 ## 0.1.1
 * Adjust ThingExpressiveSheet padding
 

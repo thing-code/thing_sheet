@@ -15,11 +15,13 @@ class ThingExpressiveSheet extends StatelessWidget {
     BuildContext context, {
     bool showIndicator = true,
     bool isDismissable = true,
+    bool useRootNavigator = true,
     required WidgetBuilder builder,
   }) {
     return showSpringBottomSheet(
       context: context,
       isDismissable: isDismissable,
+      rootNavigator: useRootNavigator,
       builder: (context) {
         return ThingExpressiveSheet(
           showIndicator: showIndicator,

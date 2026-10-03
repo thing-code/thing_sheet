@@ -17,13 +17,14 @@ Future<T?> showSpringBottomSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
   bool isDismissable = true,
+  bool rootNavigator = true,
 }) {
   assert(debugCheckHasMediaQuery(context));
   assert(debugCheckHasMaterialLocalizations(context));
 
   final MaterialLocalizations localizations = MaterialLocalizations.of(context);
 
-  return Navigator.of(context).push(
+  return Navigator.of(context, rootNavigator: rootNavigator).push(
     SpringSheetRoute<T>(
       builder: builder,
       isDismissable: isDismissable,
