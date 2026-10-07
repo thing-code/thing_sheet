@@ -5,17 +5,20 @@ class ThingExpressiveSheet extends StatelessWidget {
   const ThingExpressiveSheet({
     super.key,
     this.showIndicator = true,
+    this.margin = 16.0,
     required this.builder,
   });
 
   final bool showIndicator;
   final WidgetBuilder builder;
+  final double margin;
 
   static Future<T?> show<T>(
     BuildContext context, {
     bool showIndicator = true,
     bool isDismissable = true,
     bool useRootNavigator = true,
+    double margin = 16.0,
     required WidgetBuilder builder,
   }) {
     return showSpringBottomSheet(
@@ -25,6 +28,7 @@ class ThingExpressiveSheet extends StatelessWidget {
       builder: (context) {
         return ThingExpressiveSheet(
           showIndicator: showIndicator,
+          margin: margin,
           builder: builder,
         );
       },
@@ -35,11 +39,11 @@ class ThingExpressiveSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final Size screen = MediaQuery.of(context).size;
-    final double top = MediaQuery.paddingOf(context).top;
-    final double bottom = MediaQuery.paddingOf(context).bottom;
+    final double top = MediaQuery.viewPaddingOf(context).top;
+    final double bottom = MediaQuery.viewPaddingOf(context).bottom;
 
     return Padding(
-      padding: .fromLTRB(16, 16, 16, bottom),
+      padding: .fromLTRB(margin, top, margin, bottom),
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: 640,

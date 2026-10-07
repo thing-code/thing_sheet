@@ -1,3 +1,6 @@
+## 0.2.0
+* Expose new `margin` parameter to setting horizontal margin from the BottomSheet
+
 ## 0.1.2
 * Add `useRootNavigator` parameter to `.show` method
 
