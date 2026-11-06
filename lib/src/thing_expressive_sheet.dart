@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:thing_sheet/src/show_spring_bottom_sheet.dart';
 
 class ThingExpressiveSheet extends StatelessWidget {
