@@ -1,36 +1,29 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:thing_sheet/src/show_spring_bottom_sheet.dart';
+import 'package:thing_sheet/src/bottom_sheet_util.dart';
 
-class ThingExpressiveSheet extends StatelessWidget {
-  const ThingExpressiveSheet({
+class ThingPopUp extends StatelessWidget {
+  const ThingPopUp({
     super.key,
     this.showIndicator = true,
-    this.margin = 16.0,
     required this.builder,
   });
 
   final bool showIndicator;
   final WidgetBuilder builder;
-  final double margin;
 
   static Future<T?> show<T>(
     BuildContext context, {
     bool showIndicator = true,
     bool isDismissable = true,
     bool useRootNavigator = true,
-    double margin = 16.0,
     required WidgetBuilder builder,
   }) {
-    return showSpringBottomSheet(
+    return showPopUp(
       context: context,
       isDismissable: isDismissable,
       rootNavigator: useRootNavigator,
       builder: (context) {
-        return ThingExpressiveSheet(
-          showIndicator: showIndicator,
-          margin: margin,
-          builder: builder,
-        );
+        return ThingPopUp(showIndicator: showIndicator, builder: builder);
       },
     );
   }
@@ -43,7 +36,7 @@ class ThingExpressiveSheet extends StatelessWidget {
     final double bottom = MediaQuery.viewPaddingOf(context).bottom;
 
     return Padding(
-      padding: .fromLTRB(margin, top, margin, bottom),
+      padding: .fromLTRB(24, top, 24, bottom),
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: 640,

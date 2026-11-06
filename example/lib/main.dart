@@ -19,7 +19,7 @@ class MainApp extends StatelessWidget {
             body: Center(
               child: FilledButton(
                 onPressed: () {
-                  ThingExpressiveSheet.show(
+                  ThingPopUp.show(
                     context,
                     showIndicator: false,
                     builder: (context) {

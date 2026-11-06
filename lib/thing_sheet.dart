@@ -1,4 +1,4 @@
 library;
 
-export 'src/thing_expressive_sheet.dart';
-export 'src/show_spring_bottom_sheet.dart';
+export 'src/bottom_sheet_util.dart';
+export 'src/thing_pop_up.dart';

@@ -13,7 +13,7 @@ import 'package:motor/motor.dart';
 ///
 /// Returns a [Future] that resolves to the value passed to [Navigator.pop]
 /// when the sheet is closed.
-Future<T?> showSpringBottomSheet<T>({
+Future<T?> showPopUp<T>({
   required BuildContext context,
   required WidgetBuilder builder,
   bool isDismissable = true,
