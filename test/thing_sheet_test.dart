@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:thing_sheet/src/bottom_sheet_util.dart';
+import 'package:thing_sheet/src/drag_handle.dart';
 import 'package:thing_sheet/src/thing_pop_up.dart';
+import 'package:thing_sheet/thing_sheet.dart';
 
 // ---------------------------------------------------------------------------
 // Helpers (top-level so they can be referenced from default parameter values)
@@ -19,14 +21,14 @@ Widget _defaultBuilder(BuildContext context) {
 
 /// Finds the [Material] widget created by [ThingPopUp] itself
 /// (as opposed to the one created by Scaffold). It is uniquely identifiable
-/// because its shape is a [RoundedRectangleBorder] with radius 40.
+/// because its shape is a [RoundedRectangleBorder] with radius 36.
 Finder findSheetMaterial() {
   return find.byWidgetPredicate(
     (w) =>
         w is Material &&
         w.shape is RoundedRectangleBorder &&
         (w.shape as RoundedRectangleBorder).borderRadius ==
-            BorderRadius.circular(40),
+            BorderRadius.circular(36),
   );
 }
 
@@ -38,31 +40,33 @@ Finder findSheetConstrainedBox() {
   );
 }
 
-// ===========================================================================
-// ThingExpressiveSheet — widget-level tests
-// ===========================================================================
-
 void main() {
   // -------------------------------------------------------------------------
-  // Helper: pump a ThingExpressiveSheet wrapped in the required Material
-  // ancestors so that Theme, MediaQuery, and Navigator are available.
+  // Helper: pump a ThingPopUp wrapped in the required Material ancestors.
   // -------------------------------------------------------------------------
   Future<void> pumpSheet(
     WidgetTester tester, {
-    bool showIndicator = true,
+    bool showDragHandle = true,
     WidgetBuilder builder = _defaultBuilder,
+    EdgeInsets viewPadding = EdgeInsets.zero,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => Center(
-              child: SizedBox(
-                width: 400,
-                height: 600,
-                child: ThingPopUp(
-                  showDragHandle: showIndicator,
-                  builder: builder,
+        home: MediaQuery(
+          data: MediaQueryData(
+            size: const Size(800, 600),
+            viewPadding: viewPadding,
+          ),
+          child: Scaffold(
+            body: Builder(
+              builder: (context) => Center(
+                child: SizedBox(
+                  width: 400,
+                  height: 600,
+                  child: ThingPopUp(
+                    showDragHandle: showDragHandle,
+                    builder: builder,
+                  ),
                 ),
               ),
             ),
@@ -73,52 +77,31 @@ void main() {
   }
 
   // =========================================================================
-  // ThingExpressiveSheet — structural & layout
+  // ThingPopUp — structural & layout
   // =========================================================================
-  group('ThingExpressiveSheet structure', () {
+  group('ThingPopUp structure', () {
     testWidgets('renders sheet content passed via builder', (tester) async {
       await pumpSheet(tester);
 
       expect(find.byKey(const Key('sheet_content')), findsOneWidget);
     });
 
-    testWidgets('renders a drag indicator by default (showIndicator = true)', (
+    testWidgets('renders a drag handle by default (showDragHandle = true)', (
       tester,
     ) async {
-      await pumpSheet(tester, showIndicator: true);
+      await pumpSheet(tester, showDragHandle: true);
 
-      // The indicator is built by the private _Indicator widget. We detect
-      // it indirectly: look for a Container whose BoxDecoration has a color
-      // (onSurfaceVariant) and borderRadius 24 — those properties uniquely
-      // identify the indicator.
-      final matching = tester.widgetList<Container>(find.byType(Container));
-      final hasIndicator = matching.any((c) {
-        final d = c.decoration;
-        return d is BoxDecoration &&
-            d.color != null &&
-            d.borderRadius == BorderRadius.circular(24);
-      });
-      expect(hasIndicator, isTrue);
+      expect(find.byType(DragHandle), findsOneWidget);
     });
 
-    testWidgets('hides drag indicator when showIndicator is false', (
+    testWidgets('hides drag handle when showDragHandle is false', (
       tester,
     ) async {
-      await pumpSheet(tester, showIndicator: false);
+      await pumpSheet(tester, showDragHandle: false);
 
-      // With no indicator, the indicator Container (decorated BoxDecoration
-      // with borderRadius 24) should not exist anywhere in the tree.
-      final matching = tester.widgetList<Container>(find.byType(Container));
-      final hasIndicator = matching.any((c) {
-        final d = c.decoration;
-        return d is BoxDecoration &&
-            d.color != null &&
-            d.borderRadius == BorderRadius.circular(24);
-      });
-      expect(hasIndicator, isFalse);
+      expect(find.byType(DragHandle), findsNothing);
 
-      // Additionally, the inner padding should be uniform.
-      // Find the Padding that is a descendant of the Sheet's Material.
+      // Additionally, the inner padding should be uniform EdgeInsets.all(20).
       final innerPadding = tester.widget<Padding>(
         find
             .descendant(of: findSheetMaterial(), matching: find.byType(Padding))
@@ -127,13 +110,13 @@ void main() {
       expect(innerPadding.padding, const EdgeInsets.all(20));
     });
 
-    testWidgets('applies asymmetric top padding when indicator is visible', (
+    testWidgets('applies asymmetric top padding when drag handle is visible', (
       tester,
     ) async {
-      await pumpSheet(tester, showIndicator: true);
+      await pumpSheet(tester, showDragHandle: true);
 
       // The first Padding inside the Sheet's Material uses fromLTRB so the
-      // indicator sits flush at the top while content has 20 px on the
+      // drag handle sits flush at the top while content has 20 px on the
       // other sides.
       final innerPadding = tester.widget<Padding>(
         find
@@ -153,22 +136,14 @@ void main() {
     testWidgets('limits max height to screen height minus top safe area', (
       tester,
     ) async {
-      // Default test surface is 800 x 600 with no safe-area inset.
-      await pumpSheet(tester);
+      await pumpSheet(
+        tester,
+        viewPadding: const EdgeInsets.only(top: 40, bottom: 20),
+      );
 
       final box = tester.widget<ConstrainedBox>(findSheetConstrainedBox());
-      // Screen height (600) - top padding (0) = 600
-      expect(box.constraints.maxHeight, 600);
-    });
-
-    testWidgets('uses surfaceContainerHigh color from the theme', (
-      tester,
-    ) async {
-      await pumpSheet(tester);
-
-      final material = tester.widget<Material>(findSheetMaterial());
-      final expectedColor = ThemeData.light().colorScheme.surfaceContainerHigh;
-      expect(material.color, expectedColor);
+      // Screen height (600) - top padding (40) = 560
+      expect(box.constraints.maxHeight, 560);
     });
 
     testWidgets('applies rounded rectangle shape to the Material surface', (
@@ -179,7 +154,7 @@ void main() {
       final material = tester.widget<Material>(findSheetMaterial());
       expect(material.shape, isA<RoundedRectangleBorder>());
       final shape = material.shape as RoundedRectangleBorder;
-      expect(shape.borderRadius, BorderRadius.circular(40));
+      expect(shape.borderRadius, BorderRadius.circular(36));
     });
 
     testWidgets('enables anti-alias clipping on the Material surface', (
@@ -191,13 +166,11 @@ void main() {
       expect(material.clipBehavior, Clip.antiAlias);
     });
 
-    testWidgets('applies outer padding of 16 logical pixels', (tester) async {
+    testWidgets('applies outer padding based on view padding', (tester) async {
+      // With zero viewPadding:
       await pumpSheet(tester);
 
-      // The outermost Padding in the ThingExpressiveSheet subtree is the
-      // 16 px one. It's the Padding that is an ancestor of the
-      // ConstrainedBox with maxWidth 640.
-      final outerPadding = tester.widget<Padding>(
+      final outerPaddingZero = tester.widget<Padding>(
         find
             .ancestor(
               of: findSheetConstrainedBox(),
@@ -205,19 +178,58 @@ void main() {
             )
             .first,
       );
-      expect(outerPadding.padding, const EdgeInsets.all(16));
+      expect(
+        outerPaddingZero.padding,
+        const EdgeInsets.fromLTRB(24, 0, 24, 0),
+      );
+
+      // With bottom > 24: bottom clamp applies to 24
+      await pumpSheet(
+        tester,
+        viewPadding: const EdgeInsets.fromLTRB(0, 30, 0, 40),
+      );
+
+      final outerPaddingClamped = tester.widget<Padding>(
+        find
+            .ancestor(
+              of: findSheetConstrainedBox(),
+              matching: find.byType(Padding),
+            )
+            .first,
+      );
+      expect(
+        outerPaddingClamped.padding,
+        const EdgeInsets.fromLTRB(24, 30, 24, 24),
+      );
+
+      // With bottom <= 24: bottom uses actual viewPadding.bottom
+      await pumpSheet(
+        tester,
+        viewPadding: const EdgeInsets.fromLTRB(0, 15, 0, 18),
+      );
+
+      final outerPaddingUnclamped = tester.widget<Padding>(
+        find
+            .ancestor(
+              of: findSheetConstrainedBox(),
+              matching: find.byType(Padding),
+            )
+            .first,
+      );
+      expect(
+        outerPaddingUnclamped.padding,
+        const EdgeInsets.fromLTRB(24, 15, 24, 18),
+      );
     });
   });
 
   // =========================================================================
-  // _Indicator — private widget verified through its observable properties
+  // DragHandle — unit tests
   // =========================================================================
-  group('Indicator', () {
-    testWidgets('indicator uses onSurfaceVariant color from the theme', (
+  group('DragHandle', () {
+    testWidgets('uses onSurfaceVariant color with 0.5 alpha from the theme', (
       tester,
     ) async {
-      // Pump with a custom theme so we can verify the indicator color
-      // comes from ColorScheme.onSurfaceVariant.
       final customTheme = ThemeData.light().copyWith(
         colorScheme: ThemeData.light().colorScheme.copyWith(
           onSurfaceVariant: const Color(0xFF123456),
@@ -227,80 +239,81 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: customTheme,
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => Center(
-                child: SizedBox(
-                  width: 400,
-                  height: 600,
-                  child: ThingPopUp(
-                    showDragHandle: true,
-                    builder: _defaultBuilder,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          home: const Scaffold(body: Center(child: DragHandle())),
         ),
       );
 
-      // Find the indicator by its distinctive BoxDecoration with
-      // borderRadius 24.
       final indicatorContainer = tester
-          .widgetList<Container>(find.byType(Container))
-          .firstWhere((c) {
-            final d = c.decoration;
-            return d is BoxDecoration &&
-                d.borderRadius == BorderRadius.circular(24);
-          });
+          .widgetList<Container>(
+            find.descendant(
+              of: find.byType(DragHandle),
+              matching: find.byType(Container),
+            ),
+          )
+          .first;
 
       final decoration = indicatorContainer.decoration as BoxDecoration;
-      expect(decoration.color, const Color(0xFF123456));
+      expect(decoration.color, const Color(0xFF123456).withValues(alpha: 0.5));
     });
 
-    testWidgets('indicator has fully rounded corners (borderRadius: 24)', (
+    testWidgets('has dimensions height 4, width 36, borderRadius 24', (
       tester,
     ) async {
-      await pumpSheet(tester, showIndicator: true);
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: Center(child: DragHandle()))),
+      );
 
       final indicatorContainer = tester
-          .widgetList<Container>(find.byType(Container))
-          .firstWhere((c) {
-            final d = c.decoration;
-            return d is BoxDecoration && d.color != null;
-          });
+          .widgetList<Container>(
+            find.descendant(
+              of: find.byType(DragHandle),
+              matching: find.byType(Container),
+            ),
+          )
+          .first;
+
+      expect(indicatorContainer.constraints?.maxHeight, 4);
+      expect(indicatorContainer.constraints?.maxWidth, 36);
 
       final decoration = indicatorContainer.decoration as BoxDecoration;
       expect(decoration.borderRadius, BorderRadius.circular(24));
     });
 
-    testWidgets('indicator is centered via an Align ancestor', (tester) async {
-      await pumpSheet(tester, showIndicator: true);
-
-      // The _Indicator wraps its Container with Align(alignment: .center).
-      // Find the indicator Container, then walk the element tree upward.
-      final indicatorContainer = tester
-          .widgetList<Container>(find.byType(Container))
-          .firstWhere((c) {
-            final d = c.decoration;
-            return d is BoxDecoration &&
-                d.borderRadius == BorderRadius.circular(24);
-          });
-
-      final containerElement = tester.element(
-        find.byWidget(indicatorContainer),
+    testWidgets('is centered via an Align ancestor', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: Center(child: DragHandle()))),
       );
-      final alignWidget = containerElement
-          .findAncestorWidgetOfExactType<Align>();
-      expect(alignWidget, isNotNull);
-      expect(alignWidget!.alignment, Alignment.center);
+
+      final alignFinder = find.descendant(
+        of: find.byType(DragHandle),
+        matching: find.byType(Align),
+      );
+      expect(alignFinder, findsOneWidget);
+      final alignWidget = tester.widget<Align>(alignFinder);
+      expect(alignWidget.alignment, Alignment.center);
+    });
+
+    testWidgets('has vertical padding of 12', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: Center(child: DragHandle()))),
+      );
+
+      final paddingWidget = tester
+          .widgetList<Padding>(
+            find.descendant(
+              of: find.byType(DragHandle),
+              matching: find.byType(Padding),
+            ),
+          )
+          .first;
+      expect(paddingWidget.padding, const EdgeInsets.symmetric(vertical: 12));
     });
   });
 
   // =========================================================================
-  // ThingExpressiveSheet.show() — static integration method
+  // ThingPopUp.show() — static integration method
   // =========================================================================
-  group('ThingExpressiveSheet.show()', () {
+  group('ThingPopUp.show()', () {
     testWidgets('opens a sheet route via Navigator and resolves when popped', (
       tester,
     ) async {
@@ -341,51 +354,47 @@ void main() {
       expect(find.text('Modal content'), findsNothing);
     });
 
-    testWidgets(
-      'showIndicator parameter is forwarded to ThingExpressiveSheet',
-      (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) {
-                  return Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        ThingPopUp.show(
-                          context,
-                          showDragHandle: false,
-                          builder: (_) => const Text('No indicator'),
-                        );
-                      },
-                      child: const Text('Open'),
-                    ),
-                  );
-                },
-              ),
+    testWidgets('showDragHandle parameter is forwarded to ThingPopUp', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                return Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ThingPopUp.show(
+                        context,
+                        showDragHandle: false,
+                        builder: (_) => const Text('No indicator'),
+                      );
+                    },
+                    child: const Text('Open'),
+                  ),
+                );
+              },
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
 
-        // The sheet should be visible.
-        expect(find.text('No indicator'), findsOneWidget);
+      // The sheet should be visible.
+      expect(find.text('No indicator'), findsOneWidget);
+      expect(find.byType(DragHandle), findsNothing);
 
-        // Verify the Padding inside the Sheet's Material uses .all(20)
-        // (no indicator means uniform padding).
-        final innerPadding = tester.widget<Padding>(
-          find
-              .descendant(
-                of: findSheetMaterial(),
-                matching: find.byType(Padding),
-              )
-              .first,
-        );
-        expect(innerPadding.padding, const EdgeInsets.all(20));
-      },
-    );
+      // Verify the Padding inside the Sheet's Material uses .all(20).
+      final innerPadding = tester.widget<Padding>(
+        find
+            .descendant(of: findSheetMaterial(), matching: find.byType(Padding))
+            .first,
+      );
+      expect(innerPadding.padding, const EdgeInsets.all(20));
+    });
 
     testWidgets('creates a non-dismissable sheet when isDismissable is false', (
       tester,
@@ -417,13 +426,127 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      // The sheet content should be visible, confirming it was created
-      // and displayed even though it cannot be dismissed by dragging.
       expect(find.text('Cannot dismiss by dragging'), findsOneWidget);
-
-      // Also verify there is a sheet Material in the overlay, confirming
-      // the route was pushed.
       expect(findSheetMaterial(), findsOneWidget);
+    });
+  });
+
+  // =========================================================================
+  // ThingSheet — facade tests
+  // =========================================================================
+  group('ThingSheet', () {
+    testWidgets('showPopUp displays ThingPopUp and returns popped value', (
+      tester,
+    ) async {
+      String? result;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                return Center(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      result = await ThingSheet.showPopUp<String>(
+                        context: context,
+                        builder: (popupContext) => Center(
+                          child: ElevatedButton(
+                            onPressed: () =>
+                                Navigator.pop(popupContext, 'popup_result'),
+                            child: const Text('Close PopUp'),
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Open PopUp'),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open PopUp'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ThingPopUp), findsOneWidget);
+      expect(find.byType(DragHandle), findsOneWidget);
+
+      await tester.tap(find.text('Close PopUp'));
+      await tester.pumpAndSettle();
+
+      expect(result, 'popup_result');
+      expect(find.byType(ThingPopUp), findsNothing);
+    });
+
+    testWidgets('showPopUp forwards showDragHandle: false', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                return Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ThingSheet.showPopUp(
+                        context: context,
+                        showDragHandle: false,
+                        builder: (_) => const Text('PopUp Without Handle'),
+                      );
+                    },
+                    child: const Text('Open PopUp'),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open PopUp'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PopUp Without Handle'), findsOneWidget);
+      expect(find.byType(DragHandle), findsNothing);
+    });
+
+    testWidgets('showSheet opens cupertino sheet with Material and SafeArea', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                return Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ThingSheet.showSheet(
+                        context: context,
+                        builder: (context, controller) => ListView(
+                          controller: controller,
+                          children: const [
+                            Text('Cupertino Sheet Content'),
+                          ],
+                        ),
+                      );
+                    },
+                    child: const Text('Open Sheet'),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open Sheet'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Cupertino Sheet Content'), findsOneWidget);
+      expect(find.byType(SafeArea), findsWidgets);
     });
   });
 
@@ -519,8 +642,6 @@ void main() {
     testWidgets('barrierOnTapHint parameter is accepted by the constructor', (
       tester,
     ) async {
-      // barrierOnTapHint does not have a public getter, but we verify the
-      // constructor accepts it and builds a valid route.
       final route = SpringSheetRoute<void>(
         barrierOnTapHint: 'Tap to close sheet',
         builder: (_) => const SizedBox(),
@@ -531,9 +652,9 @@ void main() {
   });
 
   // =========================================================================
-  // showSpringBottomSheet() — integration
+  // showPopUp() — integration
   // =========================================================================
-  group('showSpringBottomSheet()', () {
+  group('showPopUp()', () {
     testWidgets('returns a Future that resolves after the sheet is popped', (
       tester,
     ) async {
