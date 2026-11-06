@@ -11,65 +11,115 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData.light(),
+      theme: ThemeData.dark(),
       darkTheme: ThemeData.dark(),
-      home: Builder(
-        builder: (context) {
-          return Scaffold(
-            body: Center(
-              child: FilledButton(
-                onPressed: () {
-                  ThingPopUp.show(
-                    context,
-                    showIndicator: false,
-                    builder: (context) {
-                      return Column(
-                        mainAxisSize: .min,
-                        children: [
-                          const Text(
-                            'Judul Bottom Sheet',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // ConstrainedBox(
-                          //   constraints: BoxConstraints(
-                          //     maxHeight: MediaQuery.heightOf(context) * .76,
-                          //   ),
-                          //   child: ListView(
-                          //     children: List.generate(
-                          //       20,
-                          //       (index) => ListTile(title: Text('Item $index')),
-                          //     ),
-                          //   ),
-                          // ),
-                          Container(
-                            height: 100,
-                            width: 100,
-                            alignment: .center,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('Tutup'),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Text("Show Bottomsheet"),
-              ),
+      home: HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const new({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: .center,
+          spacing: 12,
+          children: [
+            FilledButton(
+              onPressed: () {
+                ThingSheet.showPopUp(
+                  context: context,
+                  builder: (context) => _PopUpBody(),
+                );
+              },
+              child: Text("Show Pop Up"),
             ),
-          );
-        },
+            OutlinedButton(
+              onPressed: () {
+                ThingSheet.showSheet(
+                  context: context,
+                  builder: (context, scrollController) =>
+                      _SheetBody(controller: scrollController),
+                );
+              },
+              child: Text("Show Sheet"),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _PopUpBody extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: .min,
+      spacing: 16,
+      children: [
+        const Text(
+          'Pop Up Example',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        Container(
+          height: 100,
+          width: 100,
+          alignment: .center,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SheetBody extends StatelessWidget {
+  final ScrollController controller;
+
+  const new({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      controller: controller,
+      slivers: [
+        SliverAppBar.large(
+          flexibleSpace: FlexibleSpaceBar(
+            title: Text('Sheet Example'),
+            centerTitle: true,
+          ),
+        ),
+        SliverPadding(
+          padding: .all(16),
+          sliver: SliverList.separated(
+            itemCount: 50,
+            itemBuilder: (context, index) =>
+                ListTile(title: Text('Data $index')),
+            separatorBuilder: (context, index) => SizedBox(height: 8),
+          ),
+        ),
+        SliverPadding(
+          padding: .symmetric(horizontal: 16),
+          sliver: SliverToBoxAdapter(
+            child: FilledButton.icon(
+              onPressed: () => Navigator.pop(context),
+              label: Text('Close'),
+              icon: Icon(Icons.logout),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

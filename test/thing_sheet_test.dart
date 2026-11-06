@@ -61,7 +61,7 @@ void main() {
                 width: 400,
                 height: 600,
                 child: ThingPopUp(
-                  showIndicator: showIndicator,
+                  showDragHandle: showIndicator,
                   builder: builder,
                 ),
               ),
@@ -234,7 +234,7 @@ void main() {
                   width: 400,
                   height: 600,
                   child: ThingPopUp(
-                    showIndicator: true,
+                    showDragHandle: true,
                     builder: _defaultBuilder,
                   ),
                 ),
@@ -354,7 +354,7 @@ void main() {
                       onPressed: () {
                         ThingPopUp.show(
                           context,
-                          showIndicator: false,
+                          showDragHandle: false,
                           builder: (_) => const Text('No indicator'),
                         );
                       },

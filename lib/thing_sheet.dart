@@ -1,4 +1,3 @@
 library;
 
-export 'src/bottom_sheet_util.dart';
-export 'src/thing_pop_up.dart';
+export 'package:thing_sheet/src/thing_sheet.dart';
