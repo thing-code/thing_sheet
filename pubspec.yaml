@@ -4,7 +4,7 @@ version: 1.0.0-dev.0
 repository: "https://github.com/thing-code/thing_sheet"
 
 environment:
-  sdk: ^3.13.4
+  sdk: ^3.13.7
   flutter: ">=1.17.0"
 
 workspace:
