@@ -1,7 +1,7 @@
 import 'dart:ui' show SemanticsHitTestBehavior;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:motor/motor.dart';
 
 /// Shows a modal sheet anchored to the bottom edge of the screen.
@@ -13,7 +13,7 @@ import 'package:motor/motor.dart';
 ///
 /// Returns a [Future] that resolves to the value passed to [Navigator.pop]
 /// when the sheet is closed.
-Future<T?> showSpringBottomSheet<T>({
+Future<T?> showPopUp<T>({
   required BuildContext context,
   required WidgetBuilder builder,
   bool isDismissable = true,
