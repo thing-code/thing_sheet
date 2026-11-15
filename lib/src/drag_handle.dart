@@ -1,6 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
+/// A small horizontal indicator used to communicate that the popup or sheet can
+/// be dragged.
 class DragHandle extends StatelessWidget {
+  /// Creates a drag handle.
   const DragHandle({super.key});
 
   @override

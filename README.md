@@ -1,81 +1,141 @@
 # thing_sheet
 
-A Flutter modal bottom sheet driven by spring physics (not a static curve/tween), with a ready-made Material Expressive visual style included. Built on top of the [`motor`](https://pub.dev/packages/motor) package for its spring simulation.
+A Flutter package for polished pop-up dialogs and bottom sheets with expressive spring-driven motion and flexible layout behavior.
+
+## Overview
+
+`thing_sheet` provides a lightweight API for showing modal surfaces that feel natural and responsive on mobile. It includes both:
+
+- `ThingSheet.showPopUp(...)` for popup-style dialogs
+- `ThingSheet.showSheet(...)` for bottom-sheet content with scroll support
+
+The package is designed for modern Flutter apps and keeps interactions smooth by using spring-based motion instead of a static curve.
 
 ## Features
 
-- **Spring-based animation** – the sheet enters with an *expressive spatial spring* and exits with a *fast standard spring*, instead of a static `Curves` value.
-- **Drag merges with the animation** – when the sheet is dragged and released, the drag velocity is carried directly into the open/close spring simulation, so it feels like a natural fling similar to modern iOS/Android sheets.
-- **Overdrag resistance** – dragging the sheet past its fully-open position feels resisted, then settles back smoothly.
-- **Automatic dismiss threshold** – the sheet closes automatically if the drag velocity or final resting position crosses a certain threshold.
-- **`isDismissable`** – control whether the sheet can be closed via drag, scrim tap, or the back button (Android).
-- **Keyboard-safe** – automatically pushed up when the keyboard appears.
-- **Accessibility** – route labels and semantics hints for screen readers are handled automatically (following the same conventions as Flutter's built-in `showModalBottomSheet`).
-- **`ThingExpressiveSheet`** – a ready-to-use wrapper widget with a rounded card, an optional drag indicator (grabber), and Material 3 Expressive-style max width/height constraints.
+- Spring-driven motion for entry and dismissal
+- Drag-to-dismiss behavior that carries velocity into the animation
+- Overdrag resistance for a more natural sheet feel
+- Automatic closing thresholds based on drag motion and position
+- Optional drag handle and dismissal controls
+- Scrollable sheet content support
+- Safe-area and keyboard-aware behavior
+- Easy integration with standard Flutter navigation APIs
 
-## Getting started
+## Installation
 
-Add the dependency to your `pubspec.yaml`:
+Add the package to your project:
 
 ```yaml
 dependencies:
-  thing_sheet: ^0.0.1
+  thing_sheet: ^1.0.0
 ```
 
-Then run:
+Then install dependencies:
 
-```sh
+```bash
 flutter pub get
 ```
 
 ## Usage
 
-### A plain sheet with spring animation
+### Import the package
 
 ```dart
 import 'package:thing_sheet/thing_sheet.dart';
+```
 
-final result = await showSpringBottomSheet<String>(
+### Show a popup
+
+```dart
+final result = await ThingSheet.showPopUp<String>(
   context: context,
-  builder: (context) => YourSheetContent(),
+  builder: (context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Example popup'),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop('done'),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  },
 );
 ```
 
-### A sheet with the Material Expressive style (card, drag indicator)
+### Show a bottom sheet
 
 ```dart
-final result = await ThingExpressiveSheet.show<String>(
-  context,
-  showIndicator: true,
-  isDismissable: true,
-  builder: (context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text('Sheet title'),
-        // other content
+await ThingSheet.showSheet(
+  context: context,
+  showDragHandle: true,
+  builder: (context, scrollController) {
+    return CustomScrollView(
+      controller: scrollController,
+      slivers: [
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => ListTile(
+              title: Text('Item $index'),
+            ),
+            childCount: 20,
+          ),
+        ),
       ],
     );
   },
 );
 ```
 
-### A sheet that can't be dismissed casually
+### Prevent casual dismissal
 
-Use `isDismissable: false` to prevent the sheet from closing via drag, scrim tap, or the back button — useful for flows that require the user to press a specific confirmation button.
+Use `isDismissable: false` when the sheet must stay open until the user confirms an action.
 
 ```dart
-await showSpringBottomSheet(
+await ThingSheet.showPopUp(
   context: context,
   isDismissable: false,
-  builder: (context) => ConfirmationContent(),
+  builder: (context) => const Text('Please confirm to continue'),
 );
 ```
 
-A more complete example is available in the `/example` folder.
+## API
 
-## Additional information
+### `ThingSheet.showPopUp`
 
-- This package depends on [`motor`](https://pub.dev/packages/motor) for its spring curves/simulations (`MaterialSpringMotion`).
-- Contributions, bug reports, and feature requests can be submitted through this package's repository/issue tracker.
-- License: see the `LICENSE` file.
+Shows a popup-style modal surface.
+
+Parameters:
+
+- `required BuildContext context`
+- `required WidgetBuilder builder`
+- `bool showDragHandle = true`
+- `bool isDismissable = true`
+- `bool useRootNavigator = true`
+
+### `ThingSheet.showSheet`
+
+Shows a bottom sheet with a scrollable body.
+
+Parameters:
+
+- `required BuildContext context`
+- `required ScrollableWidgetBuilder builder`
+- `bool showDragHandle = false`
+- `bool useNestedNavigation = false`
+- `bool enableDrag = true`
+- `double? topGap`
+
+## Example app
+
+A complete usage example is available in the `/example` directory.
+
+## License
+
+This project is licensed under the MIT license. See the `LICENSE` file for details.

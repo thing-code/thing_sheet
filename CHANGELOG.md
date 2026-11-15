@@ -1,3 +1,6 @@
+## 1.0.1
+* Update documentation to reflect the new `ThingSheet` API and usage examples.
+
 ## 1.0.0
 **BREAKING CHANGES**
 * Update Dart SDK version to `3.14.0` with Flutter `3.47.8`

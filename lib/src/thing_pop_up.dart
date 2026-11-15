@@ -2,7 +2,14 @@ import 'package:material_ui/material_ui.dart';
 import 'package:thing_sheet/src/bottom_sheet_util.dart';
 import 'package:thing_sheet/src/drag_handle.dart';
 
+/// A popup-style modal surface with optional drag handle and configurable
+/// margins.
+///
+/// This widget is used by [ThingPopUp.show] to present a compact overlay that
+/// visually behaves like a modern bottom-aligned dialog while remaining easy to
+/// integrate with the standard Flutter navigation stack.
 class ThingPopUp extends StatelessWidget {
+  /// Creates a popup surface.
   const ThingPopUp({
     super.key,
     this.showDragHandle = false,
@@ -10,10 +17,17 @@ class ThingPopUp extends StatelessWidget {
     this.margin,
   });
 
+  /// Whether to render the drag handle above the popup content.
   final bool showDragHandle;
+
+  /// Builds the content displayed inside the popup surface.
   final WidgetBuilder builder;
+
+  /// Optional custom padding around the popup. When omitted, the widget uses a
+  /// safe default margin based on the viewport insets.
   final EdgeInsets? margin;
 
+  /// Displays a popup modal using the package's spring-driven route.
   static Future<T?> show<T>(
     BuildContext context, {
     bool showDragHandle = false,
