@@ -1,6 +1,6 @@
 import 'package:cupertino_ui/cupertino_ui.dart' as cupertino;
 import 'package:flutter/widgets.dart';
-import 'package:material_ui/material_ui.dart' show Material;
+import 'package:material_ui/material_ui.dart' show Material, Theme;
 import 'package:thing_sheet/src/thing_pop_up.dart';
 
 class ThingSheet {
@@ -30,7 +30,9 @@ class ThingSheet {
     useNestedNavigation: useNestedNavigation,
     showDragHandle: showDragHandle,
     scrollableBuilder: (context, scrollController) {
+      final Color backgroundColor = Theme.of(context).colorScheme.surface;
       return Material(
+        color: backgroundColor,
         child: SafeArea(child: builder(context, scrollController)),
       );
     },

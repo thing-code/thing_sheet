@@ -1,6 +1,6 @@
-## 1.0.0-dev.0
+## 1.0.0
 **BREAKING CHANGES**
-* Update Dart SDK version to `3.13.7` with Flutter `3.47.8`
+* Update Dart SDK version to `3.14.0` with Flutter `3.47.8`
 * Decouple flutter ui to `material_ui` and `cupertino_ui` packages.
 * Rename `ThingExpressiveSheet` to `ThingSheet`.
 * Separate `ThingSheet` method for pop up and bottom sheet.
