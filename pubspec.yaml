@@ -1,6 +1,6 @@
 name: thing_sheet
 description: "A Complete Pop Up and Bottom Sheet with Material Expressive animations."
-version: 1.0.1
+version: 1.0.2
 repository: "https://github.com/thing-code/thing_sheet"
 
 environment:

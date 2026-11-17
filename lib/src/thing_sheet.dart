@@ -47,7 +47,7 @@ class ThingSheet {
       final Color backgroundColor = Theme.of(context).colorScheme.surface;
       return Material(
         color: backgroundColor,
-        child: SafeArea(child: builder(context, scrollController)),
+        child: builder(context, scrollController),
       );
     },
     topGap: topGap,

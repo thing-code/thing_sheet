@@ -1,3 +1,6 @@
+## 1.0.2
+* Remove `SafeArea` padding from `ThingSheet` to allow for more flexible layout options.
+
 ## 1.0.1
 * Update documentation to reflect the new `ThingSheet` API and usage examples.
 
